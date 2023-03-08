@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,39 +42,46 @@ public class StudentController {
 		}
 		
 	}
-	
-//	@PostMapping("/student")
-//	@Transactional
-//	public String createNewStudent() {
-//		return "student id = 12398";
-//	}
-	
 
+// THIS WORKS!
 	@PostMapping("/student")
 	@Transactional
-	public Student createNewStudent( @RequestBody String email, @RequestBody String name) {
-		
-		//Check for existing student
-		//List<Student> studentList = studentRepository.findStudentByEmail(email);
-		//Student student = studentList.get(0);
-		
-		Student student = studentRepository.findByEmail(email);
-		
-		if (student == null) {
-			//Make new student
-			student = new Student();
-			student.setEmail(email);
-			student.setName(name);
-			
-			Student savedStudent = studentRepository.save(student);
-			//ScheduleDTO.CourseDTO result = createCourseDTO(savedStudent);  do I need a StudentDTO (and setter function below?)
-			return savedStudent;
+	public Student createNewStudent( @RequestBody Student student) {
+		if (!studentRepository.existsByEmail(student.getEmail())) {
+			return studentRepository.save(student);
 		}else {
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student already exists in database.  "+student.getStudent_id());
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student already exists in database.");
 		}
-		
-
 	}
 	
 
+//THIS WORKS!
+	@DeleteMapping("/student")
+	@Transactional
+	public void deleteStudent( @RequestBody Student student) {
+		String email = student.getEmail();
+		if (studentRepository.existsByEmail(email)) {
+			//Delete Student using appropriate SQL query
+			studentRepository.deleteByEmail(email);
+		}else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student does not exist in database.");
+		}
+		
+	}
+	
+// //THIS WORKS!
+//		@DeleteMapping("/student")
+//		@Transactional
+//		public void deleteStudent( @RequestBody Student student) {
+//			String email = student.getEmail();
+//			Student databaseStudent = studentRepository.findByEmail(email);
+//			//Student student = studentRepository.findById(id);
+//			if (databaseStudent != null) {
+//				//Delete Student using appropriate SQL query
+//				studentRepository.deleteByEmail(email);
+//			}else {
+//				throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student with email: " + email + " does not exist in database.");
+//			}
+//			
+//		}
 }
